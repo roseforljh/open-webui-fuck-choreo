@@ -182,7 +182,7 @@ RUN if [ "$USE_PERMISSION_HARDENING" = "true" ]; then \
     find /root -type d -exec chmod g+s {} + || true; \
     fi
 
-USER $UID:$GID
+USER 10001:10001
 
 ARG BUILD_HASH
 ENV WEBUI_BUILD_VERSION=${BUILD_HASH}
