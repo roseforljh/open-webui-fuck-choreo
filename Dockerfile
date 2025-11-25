@@ -182,10 +182,11 @@ RUN if [ "$USE_PERMISSION_HARDENING" = "true" ]; then \
     find /root -type d -exec chmod g+s {} + || true; \
     fi
 
-USER 10001:10001
 
 ARG BUILD_HASH
 ENV WEBUI_BUILD_VERSION=${BUILD_HASH}
 ENV DOCKER=true
+
+USER 10010:10010
 
 CMD [ "bash", "start.sh"]
