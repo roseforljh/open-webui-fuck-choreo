@@ -124,6 +124,11 @@ RUN apt-get update && \
     ffmpeg libsm6 libxext6 \
     && rm -rf /var/lib/apt/lists/*
 
+
+# Install PyMySQL for MySQL / TiDB support
+RUN pip3 install --no-cache-dir pymysql
+
+
 # install python dependencies
 COPY --chown=$UID:$GID ./backend/requirements.txt ./requirements.txt
 
