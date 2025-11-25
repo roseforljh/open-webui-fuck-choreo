@@ -19,8 +19,8 @@ ARG USE_TIKTOKEN_ENCODING_NAME="cl100k_base"
 
 ARG BUILD_HASH=dev-build
 # Override at your own risk - non-root configurations are untested
-ARG UID=10001
-ARG GID=10001
+ARG UID=0
+ARG GID=0
 
 ######## WebUI frontend ########
 FROM --platform=$BUILDPLATFORM node:22-alpine3.20 AS build
@@ -182,11 +182,10 @@ RUN if [ "$USE_PERMISSION_HARDENING" = "true" ]; then \
     find /root -type d -exec chmod g+s {} + || true; \
     fi
 
+USER $UID:$GID
 
 ARG BUILD_HASH
 ENV WEBUI_BUILD_VERSION=${BUILD_HASH}
 ENV DOCKER=true
-
-USER 10010:10010
 
 CMD [ "bash", "start.sh"]
