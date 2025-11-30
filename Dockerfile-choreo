@@ -5,21 +5,14 @@ FROM ghcr.io/open-webui/open-webui:main
 ARG USER_ID=10010
 ARG GROUP_ID=10010
 
-# 3. 关键修复：重定向 HOME 环境变量
-# 让所有工具(HuggingFace, TikToken, Chroma)都把缓存写到 /app/backend/data
-ENV HOME=/app/backend/data
+# 3. 关键修改：把所有需要写入数据的路径指向 /tmp
+# Choreo 的根文件系统是只读的，只有 /tmp 是可写的
+ENV HOME=/tmp
+ENV DATA_DIR=/tmp/data
 
-# 4. 创建用户并修复权限
-# -d /app/backend/data: 设置用户的家目录
+# 4. 创建用户
 RUN groupadd -g $GROUP_ID choreo && \
-    useradd -u $USER_ID -g $GROUP_ID -m -d /app/backend/data choreo && \
-    # 修正数据目录权限
-    chown -R $USER_ID:$GROUP_ID /app/backend/data && \
-    # 修正构建目录权限(前端静态文件)
-    chown -R $USER_ID:$GROUP_ID /app/build && \
-    # Choreo 权限硬化: 允许 Root Group 读写
-    chgrp -R 0 /app/backend/data && \
-    chmod -R g+rwX /app/backend/data
+    useradd -u $USER_ID -g $GROUP_ID -d /tmp choreo
 
 # 5. 切换用户
 USER $USER_ID
