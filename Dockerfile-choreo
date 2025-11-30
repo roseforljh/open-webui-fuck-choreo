@@ -1,25 +1,31 @@
-# 1. 直接继承官方编译好的镜像 (省去编译前端和安装 PyTorch 的漫长时间)
+# 1. 继承官方镜像
 FROM ghcr.io/open-webui/open-webui:main
 
-# 2. 设置非 Root 用户 ID (符合 Choreo 要求)
+# 2. 定义用户 ID
 ARG USER_ID=10010
 ARG GROUP_ID=10010
 
-# 3. 创建用户并修正权限 (核心步骤)
-# 我们将 /app/backend/data 的所有权交给新用户
-# 并将 /app 目录设置为对 Group 0 (root组) 可写，以兼容 OpenShift/Choreo 的随机用户策略
+# 3. 关键修复：重定向 HOME 环境变量
+# 让所有工具(HuggingFace, TikToken, Chroma)都把缓存写到 /app/backend/data
+ENV HOME=/app/backend/data
+
+# 4. 创建用户并修复权限
+# -d /app/backend/data: 设置用户的家目录
 RUN groupadd -g $GROUP_ID choreo && \
     useradd -u $USER_ID -g $GROUP_ID -m -d /app/backend/data choreo && \
+    # 修正数据目录权限
     chown -R $USER_ID:$GROUP_ID /app/backend/data && \
-    # 关键：Choreo 权限硬化 (让 Root Group 可读写)
+    # 修正构建目录权限(前端静态文件)
+    chown -R $USER_ID:$GROUP_ID /app/build && \
+    # Choreo 权限硬化: 允许 Root Group 读写
     chgrp -R 0 /app/backend/data && \
     chmod -R g+rwX /app/backend/data
 
-# 4. 切换到非 Root 用户
+# 5. 切换用户
 USER $USER_ID
 
-# 5. 声明端口
+# 6. 暴露端口
 EXPOSE 8080
 
-# 6. 启动命令
+# 7. 启动
 CMD [ "bash", "start.sh" ]
